@@ -55,14 +55,14 @@ def model_func(model, images, training=True):
 def cal_loss(A_2_B_model, B_2_A_model, A_discrim, B_discrim, A_images, B_images):
 
     with tf.GradientTape() as g_tape, tf.GradientTape() as d_tape:
-        bridge1_fake_B, bridge2_fake_B, final_fake_B = model_func(A_2_B_model, [A_images, B_images], True)
-        bridge1_rec_A, bridge2_rec_A, final_rec_A = model_func(B_2_A_model, [final_fake_B, A_images], True)
+        final_fake_B = model_func(A_2_B_model, [A_images, B_images], True)
+        final_rec_A = model_func(B_2_A_model, [final_fake_B, A_images], True)
 
-        bridge1_fake_A, bridge2_fake_A, final_fake_A = model_func(B_2_A_model, [B_images, A_images], True)
-        bridge1_rec_B, bridge2_rec_B, final_rec_B = model_func(A_2_B_model, [final_fake_A, B_images], True)
+        final_fake_A = model_func(B_2_A_model, [B_images, A_images], True)
+        final_rec_B = model_func(A_2_B_model, [final_fake_A, B_images], True)
 
-        bridge1_id_A, bridge2_id_A, final_id_A = model_func(B_2_A_model, [A_images, B_images], True)
-        bridge1_id_B, bridge2_id_B, final_id_B = model_func(A_2_B_model, [B_images, A_images], True)
+        final_id_A = model_func(B_2_A_model, [A_images, B_images], True)
+        final_id_B = model_func(A_2_B_model, [B_images, A_images], True)
 
         realA_logits = model_func(A_discrim, A_images, True)
         fakeA_logits = model_func(A_discrim, final_fake_A, True)
@@ -70,21 +70,17 @@ def cal_loss(A_2_B_model, B_2_A_model, A_discrim, B_discrim, A_images, B_images)
         realB_logits = model_func(B_discrim, B_images, True)
         fakeB_logits = model_func(B_discrim, final_fake_B, True)
 
-        sum_rec_A = (bridge1_rec_A + bridge2_rec_A) / 2.0
-        sum_rec_B = (bridge1_rec_B + bridge2_rec_B) / 2.0
+        #sum_rec_A = (bridge1_rec_A + bridge2_rec_A) / 2.0
+        #sum_rec_B = (bridge1_rec_B + bridge2_rec_B) / 2.0
 
-        sum_id_A = (bridge1_id_A + bridge2_id_A) / 2.0
-        sum_id_B = (bridge1_id_B + bridge2_id_B) / 2.0
+        #sum_id_A = (bridge1_id_A + bridge2_id_A) / 2.0
+        #sum_id_B = (bridge1_id_B + bridge2_id_B) / 2.0
 
         cycle_loss = (tf.reduce_mean(tf.abs(final_rec_A - A_images)) * 10.0 \
-            + tf.reduce_mean(tf.abs(sum_rec_A - A_images)) * 5.0 \
-            + tf.reduce_mean(tf.abs(final_rec_B - B_images)) * 10.0 \
-            + tf.reduce_mean(tf.abs(sum_rec_B - B_images)) * 5.0) / 4.0
+            + tf.reduce_mean(tf.abs(final_rec_B - B_images)) * 10.0) / 2.0
 
-        id_loss = (tf.reduce_mean(tf.abs(sum_id_A - A_images)) * 5.0 \
-            + tf.reduce_mean(tf.abs(sum_id_B - B_images)) * 5.0 \
-            + tf.reduce_mean(tf.abs(final_id_A - A_images)) * 10.0 \
-            + tf.reduce_mean(tf.abs(final_id_B - B_images)) * 10.0) / 4.0
+        id_loss = (tf.reduce_mean(tf.abs(final_id_A - A_images)) * 10.0 \
+            + tf.reduce_mean(tf.abs(final_id_B - B_images)) * 10.0) / 2.0
 
         gen_loss = tf.reduce_mean((fakeA_logits - tf.ones_like(fakeA_logits))**2) + tf.reduce_mean((fakeB_logits - tf.ones_like(fakeB_logits))**2)
 
@@ -140,18 +136,13 @@ def main():
             print(g_loss, d_loss, count)
 
             if count % 100 == 0:
-                bridge1_fake_B, bridge2_fake_B, final_fake_B = A_2_B_model([A_images, B_images], False)
+                final_fake_B = A_2_B_model([A_images, B_images], False)
 
-                sum_fake_B = (bridge1_fake_B + bridge2_fake_B + final_fake_B) / 3.
-
-                plt.imsave("C:/Users/Yuhwan/Pictures/img/{}_fakeB1.jpg".format(count), bride_fake_B[0] * 0.5 + 0.5)
-                plt.imsave("C:/Users/Yuhwan/Pictures/img/{}_fakeB2.jpg".format(count), bride2_fake_B[0] * 0.5 + 0.5)
                 plt.imsave("C:/Users/Yuhwan/Pictures/img/{}_fake_finaBl.jpg".format(count), final_fake_B[0] * 0.5 + 0.5)
-                plt.imsave("C:/Users/Yuhwan/Pictures/img/{}_merge_fakeB.jpg".format(count), sum_fake_B[0] * 0.5 + 0.5)
 
                 plt.imsave("C:/Users/Yuhwan/Pictures/img/{}_realA.jpg".format(count), A_images[0] * 0.5 + 0.5)
                 plt.imsave("C:/Users/Yuhwan/Pictures/img/{}_targetB.jpg".format(count), B_images[0] * 0.5 + 0.5)
-
+                
             count += 1
 
 if __name__ == "__main__":
