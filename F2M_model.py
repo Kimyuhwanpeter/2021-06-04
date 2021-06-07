@@ -236,7 +236,7 @@ def Encoder_Decoder(input_shape=(256, 256, 3), weight_decay=0.00005, batch_size=
     h2 = tf.keras.layers.ReLU()(h2)   # [64, 64, 256]
     ############################################################
 
-    for i in range(9):
+    for i in range(4):
         h = ResBlock(h, dim*4, weight_decay)
 
     for i in range(2):
@@ -260,7 +260,7 @@ def Encoder_Decoder(input_shape=(256, 256, 3), weight_decay=0.00005, batch_size=
     outputs = h = tf.concat([h3, h4], -1)
     ############################################################
 
-    for i in range(9):
+    for i in range(4):
         h = ResBlock(h, 256, weight_decay)  # [64, 64, 256]
     #h = tf.keras.layers.Conv2D(filters=dim * 4,
     #                            kernel_size=3,
@@ -287,29 +287,29 @@ def Encoder_Decoder(input_shape=(256, 256, 3), weight_decay=0.00005, batch_size=
     h = InstanceNormalization()(h)
     h = tf.keras.layers.ReLU()(h)   # [128, 128, 128]
 
-    outputs1 = tf.keras.layers.UpSampling2D((2,2))(h)   # [256, 256, 128]
-    outputs1 = tf.concat([outputs1, inputs], -1)
-    outputs1 = tf.keras.layers.ZeroPadding2D((3,3))(outputs1)
-    outputs1 = tf.keras.layers.Conv2D(filters=3,
-                                      kernel_size=7,
-                                      strides=1,
-                                      padding="valid")(outputs1)   # [256, 256, 3]
-    outputs1 = tf.nn.tanh(outputs1)
+    #outputs1 = tf.keras.layers.UpSampling2D((2,2))(h)   # [256, 256, 128]
+    #outputs1 = tf.concat([outputs1, inputs], -1)
+    #outputs1 = tf.keras.layers.ZeroPadding2D((3,3))(outputs1)
+    #outputs1 = tf.keras.layers.Conv2D(filters=3,
+    #                                  kernel_size=7,
+    #                                  strides=1,
+    #                                  padding="valid")(outputs1)   # [256, 256, 3]
+    #outputs1 = tf.nn.tanh(outputs1)
     
-    outputs2 = tf.keras.layers.UpSampling2D((2,2))(h)  # [256, 256, 128]
-    outputs2 = tf.concat([outputs2, inputs2], -1)
-    outputs2 = tf.keras.layers.Conv2D(filters=64,
-                                      kernel_size=3,
-                                      strides=1,
-                                      padding="same")(outputs2)   # [256, 256, 64]
-    outputs2 = InstanceNormalization()(outputs2)
-    outputs2 = tf.keras.layers.ReLU()(outputs2)
-    outputs2 = tf.keras.layers.ZeroPadding2D((3,3))(outputs2)
-    outputs2 = tf.keras.layers.Conv2D(filters=3,
-                                      kernel_size=7,
-                                      strides=1,
-                                      padding="valid")(outputs2)   # [256, 256, 3]
-    outputs2 = tf.nn.tanh(outputs2)
+    #outputs2 = tf.keras.layers.UpSampling2D((2,2))(h)  # [256, 256, 128]
+    #outputs2 = tf.concat([outputs2, inputs2], -1)
+    #outputs2 = tf.keras.layers.Conv2D(filters=64,
+    #                                  kernel_size=3,
+    #                                  strides=1,
+    #                                  padding="same")(outputs2)   # [256, 256, 64]
+    #outputs2 = InstanceNormalization()(outputs2)
+    #outputs2 = tf.keras.layers.ReLU()(outputs2)
+    #outputs2 = tf.keras.layers.ZeroPadding2D((3,3))(outputs2)
+    #outputs2 = tf.keras.layers.Conv2D(filters=3,
+    #                                  kernel_size=7,
+    #                                  strides=1,
+    #                                  padding="valid")(outputs2)   # [256, 256, 3]
+    #outputs2 = tf.nn.tanh(outputs2)
 
     h = tf.keras.layers.Conv2DTranspose(filters=64,
                                         kernel_size=3,
@@ -330,7 +330,7 @@ def Encoder_Decoder(input_shape=(256, 256, 3), weight_decay=0.00005, batch_size=
     outputs3 = tf.nn.tanh(h)
 
 
-    return tf.keras.Model(inputs=[inputs, inputs2], outputs=[outputs1, outputs2, outputs3])
+    return tf.keras.Model(inputs=[inputs, inputs2], outputs=outputs3)
 
 model = Encoder_Decoder()
 model.summary()
